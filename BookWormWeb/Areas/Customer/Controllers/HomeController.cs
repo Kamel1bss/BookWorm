@@ -2,7 +2,7 @@ using System.Diagnostics;
 using BookWormWeb.Models;
 using Microsoft.AspNetCore.Mvc;
 
-namespace BookWormWeb.Controllers
+namespace BookWormWeb.Areas.Customer.Controllers
 {
     public class HomeController : Controller
     {
