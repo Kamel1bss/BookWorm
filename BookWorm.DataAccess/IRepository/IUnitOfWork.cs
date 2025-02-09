@@ -9,5 +9,6 @@ namespace BookWorm.DataAccess.IRepository;
 public interface IUnitOfWork
 {
     ICategoryRepository _categoryRepo { get; }
+    IProductRepository _productRepo { get; }
     void Save();
 }

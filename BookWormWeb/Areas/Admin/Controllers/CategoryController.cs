@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BookWormWeb.Areas.Admin.Controllers;
 
+[Area("Admin")]
 public class CategoryController(IUnitOfWork context) : Controller
 {
     private readonly IUnitOfWork _context = context;
@@ -35,7 +36,7 @@ public class CategoryController(IUnitOfWork context) : Controller
 
     public IActionResult Edit(int? id)
     {
-        var category = _context._categoryRepo.Get(c => c.Id == id);
+        var category = _context._categoryRepo.Get(c => c.CategoryId == id);
         return View(category);
     }
 
@@ -56,7 +57,7 @@ public class CategoryController(IUnitOfWork context) : Controller
 
     public IActionResult Delete(int? id)
     {
-        var category = _context._categoryRepo.Get(c => c.Id == id);
+        var category = _context._categoryRepo.Get(c => c.CategoryId == id);
         return View(category);
     }
 
