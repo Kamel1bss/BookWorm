@@ -1,5 +1,5 @@
 using System.Diagnostics;
-using BookWormWeb.Models;
+using BookWorm.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BookWormWeb.Areas.Customer.Controllers

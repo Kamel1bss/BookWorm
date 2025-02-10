@@ -1,63 +1,89 @@
 ﻿using BookWorm.DataAccess.IRepository;
 using BookWorm.Models;
+using BookWorm.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace BookWormWeb.Areas.Admin.Controllers;
 
 [Area("Admin")]
-public class ProductController(IUnitOfWork context) : Controller
+public class ProductController(IUnitOfWork context, IWebHostEnvironment webHostEnvironment) : Controller
 {
     private readonly IUnitOfWork _context = context;
+    private readonly IWebHostEnvironment _webHostEnvironment = webHostEnvironment;
     public IActionResult Index()
     {
-        var entities = _context._productRepo.GetAll();
-        return View(entities);
+        var products = _context._productRepo.GetAll(includeProperties:"Category");
+   
+        return View(products);
     }
 
-    public IActionResult Create()
+    public IActionResult Upsert(int? id)
     {
-        return View();
+        ProductVM product_categories = new ProductVM
+        {
+            Product = new Product(),
+            CategoryList = _context._categoryRepo.GetAll().Select(c => new SelectListItem
+            {
+                Text = c.Name,
+                Value = c.CategoryId.ToString()
+            })
+        };
+
+        if (id is not null && id != 0)
+            product_categories.Product = _context._productRepo.Get(p => p.Id == id);
+
+        return View(product_categories);
     }
 
     [HttpPost]
-    public IActionResult Create(Product product)
+    public IActionResult Upsert(ProductVM productVM, IFormFile? file)
     {
         if (ModelState.IsValid)
         {
-            _context._productRepo.Add(product);
+            string wwwrootPath = _webHostEnvironment.WebRootPath;
+            if(file is not null)
+            {
+                string fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+                string productPath = Path.Combine(wwwrootPath, @"images\products");
+
+                if (!string.IsNullOrEmpty(productVM.Product.ImageUrl))
+                {
+                    string oldPath = Path.Combine(wwwrootPath, productVM.Product.ImageUrl.TrimStart('\\'));
+                    if (System.IO.File.Exists(oldPath))
+                    {
+                        System.IO.File.Delete(oldPath);
+                    }
+                }
+
+                using (var fileStream = new FileStream(Path.Combine(productPath, fileName), FileMode.Create))
+                {
+                    file.CopyTo(fileStream);
+                }
+
+                productVM.Product.ImageUrl = @"\images\products\" + fileName;
+            }
+
+            if (productVM.Product.Id == 0)
+            {
+                _context._productRepo.Add(productVM.Product);
+            }
+            else
+            {
+                _context._productRepo.Update(productVM.Product);
+            }
             _context.Save();
             TempData["success"] = "Product created successfully";
             return RedirectToAction("Index");
         }
 
-        return View();
-    }
-
-    public IActionResult Edit(int? id)
-    {
-        if (id == 0 || id is null)
-            return NotFound();
-
-        var product = _context._productRepo.Get(p => p.Id == id);
-
-        if (product is null)
-            return NotFound();
-
-        return View(product);
-    }
-
-    [HttpPost]
-    public IActionResult Edit(Product product)
-    {
-        if (product is not null && ModelState.IsValid)
+        productVM.CategoryList = _context._categoryRepo.GetAll().Select(c => new SelectListItem
         {
-            _context._productRepo.Update(product);
-            _context.Save();
-            TempData["update"] = "Product updated successfully";
-            return RedirectToAction("Index");
-        }
+            Text = c.Name,
+            Value = c.CategoryId.ToString()
+        });
 
-        return View(product);
+        return View(productVM);
     }
 
     public IActionResult Delete(int? id)
@@ -70,6 +96,13 @@ public class ProductController(IUnitOfWork context) : Controller
         if (product is null)
             return NotFound();
 
+        IEnumerable<SelectListItem> categories = _context._categoryRepo.GetAll().Select(c => new SelectListItem
+        {
+            Text = c.Name,
+            Value = c.CategoryId.ToString()
+        });
+
+        ViewBag.Categories = categories;
         return View(product);
     }
 

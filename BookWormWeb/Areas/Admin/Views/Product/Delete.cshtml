@@ -47,6 +47,12 @@
                     <input asp-for="Price100" class="form-control border-0 shadow" disabled />
                     <label asp-for="Price100" class="ms-2"></label>
                 </div>
+                <div class="form-floating py-2 col-12">
+                    <select asp-for="CategoryId" disabled asp-items="@ViewBag.Categories" class="form-select border-0 shadow">
+                        <option value="@Model.CategoryId" selected disabled></option>
+                    </select>
+                    <label asp-for="CategoryId" class="ms-2"></label>
+                </div>
                 <div class="row pt-2">
                     <div class="col-6 col-md-3">
                         <button type="submit" class="btn btn-danger form-control">Delete</button>

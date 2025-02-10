@@ -26,17 +26,31 @@ namespace BookWorm.DataAccess.Repository
             dbset.Add(entity);
         }
 
-        public T Get(Expression<Func<T, bool>> filter)
+        public T Get(Expression<Func<T, bool>> filter, string? includeProperties = null)
         {
             IQueryable<T> query = dbset;
             query = query.Where(filter);
+            if (!string.IsNullOrWhiteSpace(includeProperties))
+            {
+                foreach (var prop in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    query = query.Include(prop);
+                }
+            }
             return query.FirstOrDefault();
         }
 
-        public IEnumerable<T> GetAll()
+        public IEnumerable<T> GetAll(string? includeProperties = null)
         {
-            IEnumerable<T> entities = dbset.ToList();
-            return entities;
+            IQueryable<T> query = dbset;
+            if (!string.IsNullOrWhiteSpace(includeProperties))
+            {
+                foreach (var prop in includeProperties.Split(new char[] {','}, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    query = query.Include(prop);
+                }
+            }
+            return query.ToList();
         }
 
         public void Remove(T entity)
