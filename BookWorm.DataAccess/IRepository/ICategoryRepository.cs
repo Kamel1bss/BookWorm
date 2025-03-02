@@ -5,10 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BookWorm.DataAccess.IRepository
+namespace BookWorm.DataAccess.IRepository;
+
+public interface ICategoryRepository : IRepository<Category>
 {
-    public interface ICategoryRepository : IRepository<Category>
-    {
-        void Update (Category category);
-    }
+    void Update (Category category);
 }

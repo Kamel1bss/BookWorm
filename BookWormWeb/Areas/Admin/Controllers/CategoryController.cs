@@ -1,11 +1,14 @@
 ﻿using BookWorm.DataAccess.Data;
 using BookWorm.DataAccess.IRepository;
 using BookWorm.Models;
+using BookWorm.Utility.Constants;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BookWormWeb.Areas.Admin.Controllers;
 
 [Area("Admin")]
+//[Authorize(Roles = SD.Role_Admin)]
 public class CategoryController(IUnitOfWork context) : Controller
 {
     private readonly IUnitOfWork _context = context;

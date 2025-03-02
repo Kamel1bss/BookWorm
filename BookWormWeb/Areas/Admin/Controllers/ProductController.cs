@@ -1,12 +1,15 @@
 ﻿using BookWorm.DataAccess.IRepository;
 using BookWorm.Models;
 using BookWorm.Models.ViewModels;
+using BookWorm.Utility.Constants;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace BookWormWeb.Areas.Admin.Controllers;
 
 [Area("Admin")]
+//[Authorize(Roles = SD.Role_Admin)]
 public class ProductController(IUnitOfWork context, IWebHostEnvironment webHostEnvironment) : Controller
 {
     private readonly IUnitOfWork _context = context;
@@ -86,37 +89,32 @@ public class ProductController(IUnitOfWork context, IWebHostEnvironment webHostE
         return View(productVM);
     }
 
-    public IActionResult Delete(int? id)
+    #region API CALLS
+    [HttpGet]
+    public IActionResult GetAll()
     {
-        if (id == 0 || id is null)
-            return NotFound();
-
-        var product = _context._productRepo.Get(p => p.Id == id);
-
-        if (product is null)
-            return NotFound();
-
-        IEnumerable<SelectListItem> categories = _context._categoryRepo.GetAll().Select(c => new SelectListItem
-        {
-            Text = c.Name,
-            Value = c.CategoryId.ToString()
-        });
-
-        ViewBag.Categories = categories;
-        return View(product);
+        var products = _context._productRepo.GetAll(includeProperties: "Category");
+        return Json(new { data = products });
     }
 
-    [HttpPost]
-    public IActionResult Delete(Product product)
+    [HttpDelete]
+    public IActionResult Delete(int id)
     {
-        if(product is not null)
+        var product = _context._productRepo.Get(p => p.Id == id);
+        if(product is null)
         {
-            _context._productRepo.Remove(product);
-            _context.Save();
-            TempData["delete"] = "Product deleted successfully";
-            return RedirectToAction("Index");
+            return Json(new { success = false, message = "Error while deleting" });
         }
 
-        return View();
+        var oldImagePath = Path.Combine(_webHostEnvironment.WebRootPath, product.ImageUrl.TrimStart('\\'));
+        if(System.IO.File.Exists(oldImagePath))
+        {
+            System.IO.File.Delete(oldImagePath);
+        }
+
+        _context._productRepo.Remove(product);
+        _context.Save();
+        return Json(new { success = true, message = "Delete successful" });
     }
+    #endregion
 }

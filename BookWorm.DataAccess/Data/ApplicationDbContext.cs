@@ -1,18 +1,31 @@
 ﻿using BookWorm.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace BookWorm.DataAccess.Data;
 
-public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
+public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<IdentityUser>(options)
 {
     public DbSet<Category> Categories { get; set; }
     public DbSet<Product> Products { get; set; }
+    public DbSet<Company> Companies { get; set; }
+    public DbSet<ShoppingCart> ShoppingCarts { get; set; }
+    public DbSet<ApplicationUser> ApplicationUsers { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
         modelBuilder.Entity<Category>().HasData(
             new Category { CategoryId = 1, Name = "Action", DisplayOrder = 1},
             new Category { CategoryId = 2, Name = "SciFi", DisplayOrder = 2},
             new Category { CategoryId = 3, Name = "History", DisplayOrder = 3}
+            );
+
+        modelBuilder.Entity<Company>().HasData(
+            new Company { Id = 1, Name = "Tech Solution", StreetAddress="123 Tech st", City="Tech City", PostalCode="122111", State="IL", PhoneNumber="0102452842"},
+            new Company { Id = 2, Name = "Vivid Books", StreetAddress="999 Vid st", City="Vid City", PostalCode="666699", State="LA", PhoneNumber="0102598754"},
+            new Company { Id = 3, Name = "Readers Club", StreetAddress="455 Main st", City="La la land", PostalCode="999111", State="NY", PhoneNumber="01096096125"}
             );
 
         modelBuilder.Entity<Product>().HasData(

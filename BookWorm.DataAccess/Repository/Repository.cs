@@ -8,59 +8,58 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BookWorm.DataAccess.Repository
+namespace BookWorm.DataAccess.Repository;
+
+public class Repository<T> : IRepository<T> where T : class
 {
-    public class Repository<T> : IRepository<T> where T : class
+    private readonly ApplicationDbContext _db;
+    internal DbSet<T> dbset;
+
+    public Repository(ApplicationDbContext db)
     {
-        private readonly ApplicationDbContext _db;
-        internal DbSet<T> dbset;
+        _db = db;
+        this.dbset = _db.Set<T>();
+    }
 
-        public Repository(ApplicationDbContext db)
-        {
-            _db = db;
-            this.dbset = _db.Set<T>();
-        }
+    public void Add(T entity)
+    {
+        dbset.Add(entity);
+    }
 
-        public void Add(T entity)
+    public T Get(Expression<Func<T, bool>> filter, string? includeProperties = null)
+    {
+        IQueryable<T> query = dbset;
+        query = query.Where(filter);
+        if (!string.IsNullOrWhiteSpace(includeProperties))
         {
-            dbset.Add(entity);
-        }
-
-        public T Get(Expression<Func<T, bool>> filter, string? includeProperties = null)
-        {
-            IQueryable<T> query = dbset;
-            query = query.Where(filter);
-            if (!string.IsNullOrWhiteSpace(includeProperties))
+            foreach (var prop in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
             {
-                foreach (var prop in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-                {
-                    query = query.Include(prop);
-                }
+                query = query.Include(prop);
             }
-            return query.FirstOrDefault();
         }
+        return query.FirstOrDefault();
+    }
 
-        public IEnumerable<T> GetAll(string? includeProperties = null)
+    public IEnumerable<T> GetAll(string? includeProperties = null)
+    {
+        IQueryable<T> query = dbset;
+        if (!string.IsNullOrWhiteSpace(includeProperties))
         {
-            IQueryable<T> query = dbset;
-            if (!string.IsNullOrWhiteSpace(includeProperties))
+            foreach (var prop in includeProperties.Split(new char[] {','}, StringSplitOptions.RemoveEmptyEntries))
             {
-                foreach (var prop in includeProperties.Split(new char[] {','}, StringSplitOptions.RemoveEmptyEntries))
-                {
-                    query = query.Include(prop);
-                }
+                query = query.Include(prop);
             }
-            return query.ToList();
         }
+        return query.ToList();
+    }
 
-        public void Remove(T entity)
-        {
-            dbset.Remove(entity);
-        }
+    public void Remove(T entity)
+    {
+        dbset.Remove(entity);
+    }
 
-        public void RemoveRange(IEnumerable<T> entities)
-        {
-            dbset.RemoveRange(entities);
-        }
+    public void RemoveRange(IEnumerable<T> entities)
+    {
+        dbset.RemoveRange(entities);
     }
 }

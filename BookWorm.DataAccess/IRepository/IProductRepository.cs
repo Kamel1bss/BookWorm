@@ -5,10 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BookWorm.DataAccess.IRepository
+namespace BookWorm.DataAccess.IRepository;
+
+public interface IProductRepository : IRepository<Product>
 {
-    public interface IProductRepository : IRepository<Product>
-    {
-        void Update(Product entity);
-    }
+    void Update(Product entity);
 }

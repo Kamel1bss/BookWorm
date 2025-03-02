@@ -10,5 +10,8 @@ public interface IUnitOfWork
 {
     ICategoryRepository _categoryRepo { get; }
     IProductRepository _productRepo { get; }
+    ICompanyRepository _companyRepo { get; }
+    IShoppingCartRepository _shoppingCartRepo { get; }
+    IApplicationUserRepository _applicationUserRepo { get; }
     void Save();
 }
