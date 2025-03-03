@@ -13,5 +13,8 @@ public interface IUnitOfWork
     ICompanyRepository _companyRepo { get; }
     IShoppingCartRepository _shoppingCartRepo { get; }
     IApplicationUserRepository _applicationUserRepo { get; }
+    IOrderHeaderRepository _orderHeaderRepo { get; }
+    IOrderDetailRepository _orderDetailRepo { get; }
+
     void Save();
 }

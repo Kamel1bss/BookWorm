@@ -1,6 +1,8 @@
 using System.Diagnostics;
+using System.Security.Claims;
 using BookWorm.DataAccess.IRepository;
 using BookWorm.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BookWormWeb.Areas.Customer.Controllers
@@ -23,8 +25,36 @@ namespace BookWormWeb.Areas.Customer.Controllers
         }
         public IActionResult Details(int productId)
         {
-            var product = _context._productRepo.Get(p => p.Id == productId, includeProperties:"Category");
-            return View(product);
+            ShoppingCart cart = new()
+            {
+                Product = _context._productRepo.Get(p => p.Id == productId, includeProperties: "Category"),
+                Count = 1,
+                ProductId = productId
+            };
+            return View(cart);
+        }
+
+        [HttpPost]
+        [Authorize]
+        public IActionResult Details(ShoppingCart cart)
+        {
+            var claimsIdentity = (ClaimsIdentity)User.Identity;
+            var userId = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier).Value;
+            cart.ApplicationUserId = userId;
+            var shoppingCartDB = _context._shoppingCartRepo.Get(
+                u => u.ApplicationUserId == userId && u.ProductId == cart.ProductId);
+            if(shoppingCartDB != null)
+            {
+                shoppingCartDB.Count += cart.Count;
+                _context._shoppingCartRepo.Update(shoppingCartDB);
+            }
+            else
+            {
+                _context._shoppingCartRepo.Add(cart);
+            }
+            _context.Save();
+            TempData["success"] = "Cart updated successfully";
+            return RedirectToAction(nameof(Index)); 
         }
 
         public IActionResult Privacy()
