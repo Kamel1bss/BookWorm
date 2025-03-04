@@ -16,4 +16,32 @@ public class OrderHeaderRepository(ApplicationDbContext db) : Repository<OrderHe
     {
         _db.OrderHeaders.Update(header);
     }
+
+    public void UpdateStatus(int id, string orderStatus, string? paymentStatus = null)
+    {
+        var orderFromDB = _db.OrderHeaders.FirstOrDefault(o => o.Id == id);
+        if(orderFromDB != null)
+        {
+            orderFromDB.OrderStatus = orderStatus;
+            if (!string.IsNullOrEmpty(orderFromDB.PaymentStatus))
+            {
+                orderFromDB.PaymentStatus = paymentStatus;
+            }
+        }
+    }
+
+    public void UpdateStripePaymentId(int id, string sessionId, string paymentIntentId)
+    {
+        var orderFormDB = _db.OrderHeaders.FirstOrDefault(o => o.Id == id);
+        if(!string.IsNullOrEmpty(sessionId))
+        {
+            orderFormDB.SessionId = sessionId;
+        }
+
+        if (!string.IsNullOrEmpty(paymentIntentId))
+        {
+            orderFormDB.PaymentIntentId = paymentIntentId;
+            orderFormDB.PaymentDate = DateTime.Now;
+        }
+    }
 }
