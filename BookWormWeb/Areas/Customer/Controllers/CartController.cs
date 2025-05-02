@@ -46,9 +46,11 @@ public class CartController(IUnitOfWork context) : Controller
 
     public IActionResult Minus(int cartId)
     {
-        var cart = _context._shoppingCartRepo.Get(u => u.Id == cartId, includeProperties: "Product");
+        var cart = _context._shoppingCartRepo.Get(u => u.Id == cartId, includeProperties: "Product", tracked: true);
         if (cart.Count <= 1)
         {
+            HttpContext.Session.SetInt32(SD.SessionCart,
+            _context._shoppingCartRepo.GetAll(u => u.ApplicationUserId == cart.ApplicationUserId).Count() - 1);
             _context._shoppingCartRepo.Remove(cart);
         }
         else
@@ -61,7 +63,9 @@ public class CartController(IUnitOfWork context) : Controller
     }
     public IActionResult Remove(int cartId)
     {
-        var cart = _context._shoppingCartRepo.Get(u => u.Id == cartId);
+        var cart = _context._shoppingCartRepo.Get(u => u.Id == cartId, tracked:true);
+        HttpContext.Session.SetInt32(SD.SessionCart,
+            _context._shoppingCartRepo.GetAll(u => u.ApplicationUserId == cart.ApplicationUserId).Count() - 1);
         _context._shoppingCartRepo.Remove(cart);
         _context.Save();
         return RedirectToAction(nameof(Index));
@@ -199,6 +203,7 @@ public class CartController(IUnitOfWork context) : Controller
                 _context._orderHeaderRepo.UpdateStripePaymentId(id, session.Id, session.PaymentIntentId);
                 _context._orderHeaderRepo.UpdateStatus(id, SD.StatusApproved, SD.PaymentStatusApproved);
                 _context.Save();
+                HttpContext.Session.Clear();
             }
         }
 

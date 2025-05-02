@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Security.Claims;
 using BookWorm.DataAccess.IRepository;
 using BookWorm.Models;
+using BookWorm.Utility.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -47,12 +48,15 @@ namespace BookWormWeb.Areas.Customer.Controllers
             {
                 shoppingCartDB.Count += cart.Count;
                 _context._shoppingCartRepo.Update(shoppingCartDB);
+                _context.Save();
+
             }
             else
             {
                 _context._shoppingCartRepo.Add(cart);
+                _context.Save();
+                HttpContext.Session.SetInt32(SD.SessionCart, _context._shoppingCartRepo.GetAll(u => u.ApplicationUserId == userId).Count());
             }
-            _context.Save();
             TempData["success"] = "Cart updated successfully";
             return RedirectToAction(nameof(Index)); 
         }

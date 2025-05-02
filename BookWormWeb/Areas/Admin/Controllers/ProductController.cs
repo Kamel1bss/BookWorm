@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 namespace BookWormWeb.Areas.Admin.Controllers;
 
 [Area("Admin")]
-//[Authorize(Roles = SD.Role_Admin)]
+[Authorize(Roles = SD.Role_Admin)]
 public class ProductController(IUnitOfWork context, IWebHostEnvironment webHostEnvironment) : Controller
 {
     private readonly IUnitOfWork _context = context;
