@@ -14,67 +14,100 @@
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="//cdn.datatables.net/2.2.2/css/dataTables.dataTables.min.css" />
-
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 
 </head>
 <body>
+
+    <div class="bw-stripe"></div>
+
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-primary border-bottom box-shadow mb-3">
+        <nav class="bw-navbar navbar navbar-expand-sm navbar-toggleable-sm">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="Customer" asp-controller="Home" asp-action="Index">BookWorm</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                aria-expanded="false" aria-label="Toggle navigation">
+
+                <!-- LOGO -->
+                <a class="bw-logo" asp-area="Customer" asp-controller="Home" asp-action="Index"
+                       aria-label="BookWorm – Home">
+                    <div class="bw-logo-icon">
+                        <img src="~/images/bookworm-logo.png"
+                             alt="BookWorm logo"
+                             width="44"
+                             height="44"
+                             style="display:block;" />
+                    </div>
+                    <div class="bw-logo-text">
+                        <span class="bw-logo-title">BookWorm</span>
+                        <span class="bw-logo-sub">Your Reading Corner</span>
+                    </div>
+                </a>
+
+                <!-- Toggler -->
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
+                    aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
+
+                <!-- Links -->
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav me-auto">
+                    <ul class="bw-nav-links navbar-nav me-auto">
                         <li class="nav-item">
-                            <a class="nav-link" asp-area="Customer" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link" asp-area="Customer" asp-controller="Home" asp-action="Index">
+                                <i class="bi bi-house me-1"></i>Home
+                            </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-area="Customer" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li> 
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="Admin" asp-controller="Order" asp-action="Index">Mange orders</a>
-                        </li> 
+                            <a class="nav-link" asp-area="Admin" asp-controller="Order" asp-action="Index">
+                                <i class="bi bi-receipt me-1"></i>Orders
+                            </a>
+                        </li>
                         @if (User.IsInRole(SD.Role_Admin))
-                        { 
+                        {
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                                    Content Management
-                                </a>                      
+                                    <i class="bi bi-grid me-1"></i>Content
+                                </a>
                                 <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" asp-area="Admin" asp-controller="Category" asp-action="Index">Category</a></li>
-                                    <li><a class="dropdown-item" asp-area="Admin" asp-controller="Product" asp-action="Index">Product</a></li>
-                                    <li><a class="dropdown-item" asp-area="Admin" asp-controller="Company" asp-action="Index">Company</a></li>
+                                    <li><a class="dropdown-item" asp-area="Admin" asp-controller="Category" asp-action="Index"><i class="bi bi-tags me-2"></i>Category</a></li>
+                                    <li><a class="dropdown-item" asp-area="Admin" asp-controller="Product" asp-action="Index"><i class="bi bi-book me-2"></i>Product</a></li>
+                                    <li><a class="dropdown-item" asp-area="Admin" asp-controller="Company" asp-action="Index"><i class="bi bi-building me-2"></i>Company</a></li>
                                     <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item" asp-area="Identity" asp-page="/Account/Register" >Create user</a></li>
+                                    <li><a class="dropdown-item" asp-area="Identity" asp-page="/Account/Register"><i class="bi bi-person-plus me-2"></i>Create User</a></li>
                                 </ul>
                             </li>
-                        } 
-                        <li class="nav-item">                           
-                            <a class="nav-link" asp-area="Customer" asp-controller="Cart" asp-action="Index">
+                        }
+                        <li class="nav-item">
+                            <a class="bw-cart-link nav-link" asp-area="Customer" asp-controller="Cart" asp-action="Index">
                                 @await Component.InvokeAsync("ShoppingCart")
                             </a>
                         </li>
                     </ul>
-                    <partial name= "_LoginPartial" />
+                    <partial name="_LoginPartial" />
                 </div>
             </div>
         </nav>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            <partial name="_notifications"></partial>
-            @RenderBody()
-        </main>
+
+    <div class="bw-main-container">
+        <div class="container">
+            <main role="main" class="pb-3">
+                <partial name="_notifications" />
+                @RenderBody()
+            </main>
+        </div>
     </div>
 
-    <footer class="border-top footer bg-primary text-white-50">
-        <div class="container text-center">
-            Made with <i class="bi bi-suit-heart-fill"></i> by Kamel
+    <footer class="bw-footer">
+        <div class="container">
+            <div class="bw-footer-inner">
+                <span class="bw-footer-logo">BookWorm</span>
+                <div class="bw-footer-sep"></div>
+                <span class="bw-footer-copy">Made with <i class="bi bi-suit-heart-fill"></i> by Kamel</span>
+            </div>
         </div>
     </footer>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

@@ -1,40 +1,91 @@
-﻿@model IEnumerable<Product>
+﻿@using Microsoft.Extensions.Localization
+@model IEnumerable<Product>
+
+<form method="get" asp-action="Index" class="mb-4">
+    <div class="bw-search-bar shadow-sm">
+
+        <div class="bw-search-input">
+            <i class="bi bi-search"></i>
+            <input id="searchBox" name="searchTerm"
+                   value="@ViewBag.SearchTerm"
+                   placeholder="Search..." />
+        </div>
+
+        <select id="filterBy" name="filterBy" class="bw-filter">
+            <option value="all">All</option>
+            <option value="title">Books</option>
+            <option value="author">Authors</option>
+        </select>
+
+        <select id="categoryId" name="categoryId" class="bw-filter">
+            <option value="0">All Categories</option>
+            @foreach (var cat in ViewBag.Categories)
+            {
+                <option value="@cat.CategoryId">@cat.Name</option>
+            }
+        </select>
+
+        <button type="submit" class="btn btn-primary px-4">
+            Search
+        </button>
+
+    </div>
+</form>
 
 <div class="row pb-3">
-    @foreach(var product in Model)
-    {
-        <div class="col-lg-3 col-sm-6">
-            <div class="row p-2">
-                <div class="col-12 p-1">
-                    <div class="card border-0 p-3 shadow border-top border rounded">
-                        <img src="@product.ImageUrl" class="card-img-top rounded" alt="@product.Title">
-                        <div class="card-body pb-0">
-                            <div class="pl-1">
-                                 <p class="card-title h5 text-dark opacity-75 text-uppercase text-center">@product.Title</p>
-                                 <p class="card-title text-warning text-center">@product.Author</p>
-                            </div>
-                            <div class="pl-1">
-                                <p class="text-dark opacity-75 text-center mb-0">
-                                    List Price:
-                                    <span class="text-decoration-line-through">
-                                        @product.ListPrice.ToString("c")
-                                    </span>
-                                </p>
-                                <p class="text-dark opacity-75 text-center">
-                                    As low as: 
-                                    <span>
-                                        @product.Price100.ToString("c")
-                                    </span>
-                                </p>
-                            </div>
-                        </div>
-                        <div>
-                            <a asp-action="Details" asp-route-productId="@product.Id" class="btn btn-primary bg-gradient border-0 form-control">Details</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    }                        
-
+    <div id="productContainer">
+        @await Html.PartialAsync("_ProductList", Model)
+    </div>
 </div>
+
+<div class="d-flex justify-content-center mt-4">
+    <nav>
+        <ul class="pagination">
+
+            @for (int i = 1; i <= ViewBag.TotalPages; i++)
+            {
+                <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                    <a class="page-link"
+                       asp-action="Index"
+                       asp-route-page="@i"
+                       asp-route-searchTerm="@ViewBag.SearchTerm"
+                       asp-route-filterBy="@ViewBag.FilterBy"
+                       asp-route-categoryId="@ViewBag.CategoryId">
+                        @i
+                    </a>
+                </li>
+            }
+
+        </ul>
+    </nav>
+</div>
+
+@section Scripts {
+    <script>
+        let timer;
+
+        function fetchProducts() {
+            const searchTerm = document.getElementById("searchBox").value;
+            const filterBy = document.getElementById("filterBy").value;
+            const categoryId = document.getElementById("categoryId").value;
+
+            fetch(`/Customer/Home/Index?searchTerm=${searchTerm}&filterBy=${filterBy}&categoryId=${categoryId}`, {
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest"
+                }
+            })
+            .then(res => res.text())
+            .then(data => {
+                document.getElementById("productContainer").innerHTML = data;
+            });
+        }
+
+        document.getElementById("searchBox").addEventListener("keyup", function () {
+            clearTimeout(timer);
+            timer = setTimeout(fetchProducts, 300);
+        });
+
+        document.getElementById("filterBy").addEventListener("change", fetchProducts);
+        document.getElementById("categoryId").addEventListener("change", fetchProducts);
+    </script>
+}

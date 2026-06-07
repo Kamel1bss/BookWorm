@@ -19,9 +19,50 @@ namespace BookWormWeb.Areas.Customer.Controllers
             _context = context;
         }
 
-        public IActionResult Index()
+        public IActionResult Index(string searchTerm, string filterBy = "all", int? categoryId = null, int page = 1)
         {
-            var products = _context._productRepo.GetAll();
+            int pageSize = 8;
+
+            var query = _context._productRepo.GetAll(includeProperties: "Category");
+
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                searchTerm = searchTerm.ToLower();
+
+                query = filterBy switch
+                {
+                    "title" => query.Where(p => p.Title.ToLower().Contains(searchTerm)),
+                    "author" => query.Where(p => p.Author.ToLower().Contains(searchTerm)),
+                    _ => query.Where(p => p.Title.ToLower().Contains(searchTerm) ||
+                                          p.Author.ToLower().Contains(searchTerm))
+                };
+            }
+
+            if (categoryId.HasValue && categoryId > 0)
+            {
+                query = query.Where(p => p.CategoryId == categoryId);
+            }
+
+            int totalItems = query.Count();
+
+            var products = query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+            ViewBag.SearchTerm = searchTerm;
+            ViewBag.FilterBy = filterBy;
+            ViewBag.CategoryId = categoryId;
+
+            ViewBag.Categories = _context._categoryRepo.GetAll().ToList();
+
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                return PartialView("_ProductList", products);
+            }
+
             return View(products);
         }
         public IActionResult Details(int productId)
@@ -42,23 +83,31 @@ namespace BookWormWeb.Areas.Customer.Controllers
             var claimsIdentity = (ClaimsIdentity)User.Identity;
             var userId = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier).Value;
             cart.ApplicationUserId = userId;
+
             var shoppingCartDB = _context._shoppingCartRepo.Get(
                 u => u.ApplicationUserId == userId && u.ProductId == cart.ProductId);
-            if(shoppingCartDB != null)
+
+            if (shoppingCartDB != null)
             {
                 shoppingCartDB.Count += cart.Count;
                 _context._shoppingCartRepo.Update(shoppingCartDB);
-                _context.Save();
-
             }
             else
             {
                 _context._shoppingCartRepo.Add(cart);
-                _context.Save();
-                HttpContext.Session.SetInt32(SD.SessionCart, _context._shoppingCartRepo.GetAll(u => u.ApplicationUserId == userId).Count());
             }
+
+            _context.Save();
+
+            HttpContext.Session.SetInt32(
+                SD.SessionCart,
+                _context._shoppingCartRepo
+                    .GetAll(u => u.ApplicationUserId == userId)
+                    .Count()
+            );
+
             TempData["success"] = "Cart updated successfully";
-            return RedirectToAction(nameof(Index)); 
+            return RedirectToAction(nameof(Index));
         }
 
         public IActionResult Privacy()
@@ -71,5 +120,6 @@ namespace BookWormWeb.Areas.Customer.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+
     }
 }

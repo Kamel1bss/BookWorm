@@ -179,6 +179,19 @@ public class OrderController(IUnitOfWork context) : Controller
                 _context.Save();
             }
         }
+        else
+        {
+            // Regular (immediate) payment — confirm via Stripe and update status
+            var service = new SessionService();
+            Session session = service.Get(orderHeader.SessionId);
+
+            if (session.PaymentStatus.ToLower() == "paid")
+            {
+                _context._orderHeaderRepo.UpdateStripePaymentId(orderHeaderId, session.Id, session.PaymentIntentId);
+                _context._orderHeaderRepo.UpdateStatus(orderHeaderId, orderHeader.OrderStatus, SD.PaymentStatusApproved);
+                _context.Save();
+            }
+        }
 
         List<ShoppingCart> shoppingCarts = _context._shoppingCartRepo
             .GetAll(u => u.ApplicationUserId == orderHeader.ApplicationUserId).ToList();
